@@ -127,7 +127,9 @@ async def _convert_pdf(params: CommonParams):
         # Get models from manager (blocking operation - run in threadpool)
         model_manager = app_data["model_manager"]
         # Unload llama-swap model before loading marker models to free VRAM and prevent CUDA OOM
-        await run_in_threadpool(unload_llama_swap_model)
+        unloaded_successfully = await run_in_threadpool(unload_llama_swap_model)
+        if not unloaded_successfully:
+            raise RuntimeError("Failed to unload llama-swap model. Aborting to prevent potential OOM errors.")
         models = await run_in_threadpool(model_manager.get_models)
 
         converter = converter_cls(

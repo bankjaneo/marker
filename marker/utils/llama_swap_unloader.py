@@ -10,7 +10,7 @@ def unload_llama_swap_model() -> bool:
     Unload the llama-swap model to free up VRAM before OCR processing.
 
     This function checks if UNLOAD_LLAMA_SWAP_BASE_URL is configured.
-    If set, it makes a POST request to the /unload endpoint
+    If set, it makes a GET request to the /unload endpoint
     to unload the model from the llama-swap service.
 
     Returns:

@@ -497,9 +497,8 @@ docker run -d \
 ```
 
 **Trade-offs**:
-- **Pro**: Idle VRAM: ~5GB → ~0GB (freeing memory for other tasks)
-- **Con**: First request ~2-5s slower (model loading overhead)
-- **Benefit**: Subsequent requests after idle periods will also reload models, but allows system to use VRAM for other purposes in between
+- **Pro**: Idle VRAM usage drops significantly (~5GB → ~0GB), freeing up memory for other tasks.
+- **Con**: Each request after an idle period is slower (~2-5s) due to model loading overhead.
 
 **Performance Impact**:
 - With `FREE_VRAM_ON_IDLE=false` (default): Fast processing, high idle VRAM usage

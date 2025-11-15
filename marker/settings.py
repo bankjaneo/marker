@@ -25,6 +25,41 @@ class Settings(BaseSettings):
     # LLM
     GOOGLE_API_KEY: Optional[str] = ""
 
+    # LLM Service Configuration
+    LLM_SERVICE: Optional[str] = None  # Explicit LLM service selection
+
+    # Gemini/Google
+    GEMINI_API_KEY: Optional[str] = None
+    GEMINI_MODEL_NAME: Optional[str] = None
+    THINKING_BUDGET: Optional[int] = None
+
+    # OpenAI
+    OPENAI_API_KEY: Optional[str] = None
+    OPENAI_MODEL: Optional[str] = None
+    OPENAI_BASE_URL: Optional[str] = None
+    OPENAI_IMAGE_FORMAT: Optional[str] = None
+
+    # Claude/Anthropic
+    CLAUDE_API_KEY: Optional[str] = None
+    CLAUDE_MODEL_NAME: Optional[str] = None
+    MAX_CLAUDE_TOKENS: Optional[int] = None
+
+    # Azure OpenAI
+    AZURE_ENDPOINT: Optional[str] = None
+    AZURE_API_KEY: Optional[str] = None
+    AZURE_API_VERSION: Optional[str] = None
+    DEPLOYMENT_NAME: Optional[str] = None
+
+    # Ollama
+    OLLAMA_BASE_URL: Optional[str] = None
+    OLLAMA_MODEL: Optional[str] = None
+
+    # LLM Request Configuration
+    TIMEOUT: Optional[int] = None
+    MAX_RETRIES: Optional[int] = None
+    RETRY_WAIT_TIME: Optional[int] = None
+    MAX_OUTPUT_TOKENS: Optional[int] = None
+
     # General models
     TORCH_DEVICE: Optional[str] = (
         None  # Note: MPS device does not work for text detection, and will default to CPU

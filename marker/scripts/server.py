@@ -39,6 +39,25 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
+def normalize_bool(value: Optional[bool | str]) -> bool:
+    """Convert string boolean values to actual booleans.
+
+    Handles OpenWebUI sending 'true'/'false' as strings in form data.
+
+    Args:
+        value: Boolean or string representation
+
+    Returns:
+        True if value is truthy string ('true', '1', 'yes', 'on') or True boolean
+        False otherwise
+    """
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.lower() in ('true', '1', 'yes', 'on')
+    return False
+
+
 @app.get("/")
 async def root():
     return HTMLResponse(
@@ -157,10 +176,10 @@ async def convert_pdf_upload(
     params = CommonParams(
         filepath=upload_path,
         page_range=page_range,
-        force_ocr=force_ocr,
-        paginate_output=paginate_output,
+        force_ocr=normalize_bool(force_ocr),
+        paginate_output=normalize_bool(paginate_output),
         output_format=output_format,
-        use_llm=use_llm,
+        use_llm=normalize_bool(use_llm),
     )
     results = await _convert_pdf(params)
     os.remove(upload_path)

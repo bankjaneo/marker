@@ -105,6 +105,9 @@ class ConfigParser:
                     config["pdftext_workers"] = 1
                 case "disable_image_extraction":
                     config["extract_images"] = False
+                case "use_llm":
+                    # Add use_llm to config so it propagates to converter and processors
+                    config["use_llm"] = v
                 case _:
                     config[k] = v
 
@@ -112,17 +115,111 @@ class ConfigParser:
         if settings.GOOGLE_API_KEY:
             config["gemini_api_key"] = settings.GOOGLE_API_KEY
 
+        # Add LLM configuration from environment variables when use_llm is enabled
+        if self.cli_options.get("use_llm", False):
+            self._add_llm_config_from_env(config)
+
+        logger.debug(f"Generated config - use_llm: {config.get('use_llm', 'NOT_IN_CONFIG')}")
         return config
 
+    def _add_llm_config_from_env(self, config: Dict[str, any]):
+        """Add LLM configuration from environment variables to config dict."""
+        # Gemini/Google
+        if settings.GEMINI_API_KEY:
+            config["gemini_api_key"] = settings.GEMINI_API_KEY
+        if settings.GEMINI_MODEL_NAME:
+            config["gemini_model_name"] = settings.GEMINI_MODEL_NAME
+        if settings.THINKING_BUDGET:
+            config["thinking_budget"] = settings.THINKING_BUDGET
+
+        # OpenAI
+        if settings.OPENAI_API_KEY:
+            config["openai_api_key"] = settings.OPENAI_API_KEY
+        if settings.OPENAI_MODEL:
+            config["openai_model"] = settings.OPENAI_MODEL
+        if settings.OPENAI_BASE_URL:
+            config["openai_base_url"] = settings.OPENAI_BASE_URL
+        if settings.OPENAI_IMAGE_FORMAT:
+            config["openai_image_format"] = settings.OPENAI_IMAGE_FORMAT
+
+        # Claude/Anthropic
+        if settings.CLAUDE_API_KEY:
+            config["claude_api_key"] = settings.CLAUDE_API_KEY
+        if settings.CLAUDE_MODEL_NAME:
+            config["claude_model_name"] = settings.CLAUDE_MODEL_NAME
+        if settings.MAX_CLAUDE_TOKENS:
+            config["max_claude_tokens"] = settings.MAX_CLAUDE_TOKENS
+
+        # Azure OpenAI
+        if settings.AZURE_ENDPOINT:
+            config["azure_endpoint"] = settings.AZURE_ENDPOINT
+        if settings.AZURE_API_KEY:
+            config["azure_api_key"] = settings.AZURE_API_KEY
+        if settings.AZURE_API_VERSION:
+            config["azure_api_version"] = settings.AZURE_API_VERSION
+        if settings.DEPLOYMENT_NAME:
+            config["deployment_name"] = settings.DEPLOYMENT_NAME
+
+        # Ollama
+        if settings.OLLAMA_BASE_URL:
+            config["ollama_base_url"] = settings.OLLAMA_BASE_URL
+        if settings.OLLAMA_MODEL:
+            config["ollama_model"] = settings.OLLAMA_MODEL
+
+        # LLM Request Configuration
+        if settings.TIMEOUT:
+            config["timeout"] = settings.TIMEOUT
+        if settings.MAX_RETRIES:
+            config["max_retries"] = settings.MAX_RETRIES
+        if settings.RETRY_WAIT_TIME:
+            config["retry_wait_time"] = settings.RETRY_WAIT_TIME
+        if settings.MAX_OUTPUT_TOKENS:
+            config["max_output_tokens"] = settings.MAX_OUTPUT_TOKENS
+
     def get_llm_service(self):
+        """
+        Select the appropriate LLM service based on environment variables.
+
+        Priority order:
+        1. Explicitly set LLM_SERVICE environment variable
+        2. Auto-detect based on which API key is available:
+           - GEMINI_API_KEY → GoogleGeminiService
+           - OPENAI_API_KEY → OpenAIService
+           - CLAUDE_API_KEY → ClaudeService
+           - AZURE_API_KEY → AzureOpenAIService
+           - OLLAMA_BASE_URL → OllamaService
+        3. Default to GoogleGeminiService with 'no-api-key' placeholder
+
+        Only return a service when use_llm is enabled.
+        """
         # Only return an LLM service when use_llm is enabled
         if not self.cli_options.get("use_llm", False):
             return None
 
-        service_cls = self.cli_options.get("llm_service", None)
-        if service_cls is None:
-            service_cls = "marker.services.gemini.GoogleGeminiService"
-        return service_cls
+        # Check for explicit LLM_SERVICE setting
+        if settings.LLM_SERVICE:
+            return settings.LLM_SERVICE
+
+        # Auto-detect based on available API keys (priority order)
+        if settings.GEMINI_API_KEY:
+            return "marker.services.gemini.GoogleGeminiService"
+        if settings.OPENAI_API_KEY:
+            return "marker.services.openai.OpenAIService"
+        if settings.CLAUDE_API_KEY:
+            return "marker.services.claude.ClaudeService"
+        if settings.AZURE_API_KEY:
+            return "marker.services.azure.AzureOpenAIService"
+        if settings.OLLAMA_BASE_URL:
+            return "marker.services.ollama.OllamaService"
+
+        # Default to Gemini service
+        logger.warning(
+            "No LLM API keys found in environment variables. "
+            "Defaulting to GoogleGeminiService with placeholder key. "
+            "Set one of: GEMINI_API_KEY, OPENAI_API_KEY, CLAUDE_API_KEY, "
+            "AZURE_API_KEY, or OLLAMA_BASE_URL"
+        )
+        return "marker.services.gemini.GoogleGeminiService"
 
     def get_renderer(self):
         match self.cli_options["output_format"]:

@@ -21,6 +21,12 @@ services:
       - HOST=0.0.0.0
       - TORCH_DEVICE=cuda
 
+      # VRAM Management (uncomment for low-VRAM devices)
+      # When enabled, models are unloaded after processing to free VRAM (~3-5GB saved)
+      # Trade-off: First request after idle period takes ~2-5s longer (model loading)
+      # Use this if you have < 4GB VRAM available
+      # - FREE_VRAM_ON_IDLE=true
+
       # ===== LLM Configuration =====
       # How to use LLM with marker_server:
       # 1. Configure ONE LLM provider below (the first available will be auto-selected)

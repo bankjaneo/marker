@@ -64,6 +64,7 @@ class Settings(BaseSettings):
     TORCH_DEVICE: Optional[str] = (
         None  # Note: MPS device does not work for text detection, and will default to CPU
     )
+    FREE_VRAM_ON_IDLE: bool = False  # Unload models after processing to free VRAM (slower first request)
 
     @computed_field
     @property

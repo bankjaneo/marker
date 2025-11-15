@@ -172,8 +172,16 @@ The following environment variables can be configured:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `USE_LLM` | `false` | Enable LLM mode |
-| `LLM_SERVICE` | - | Full path to LLM service class |
+| `USE_LLM` | `false` | Enable LLM processing when requested by OpenWebUI |
+| `LLM_SERVICE` | `auto-detect` | Explicitly specify LLM service (auto-detected from available API keys if not set) |
+
+**Note:** When `USE_LLM=true`, the first available LLM provider (based on configured API keys) will be auto-selected in this priority order:
+1. `GEMINI_API_KEY` → GoogleGeminiService
+2. `OPENAI_API_KEY` → OpenAIService
+3. `CLAUDE_API_KEY` → ClaudeService
+4. `AZURE_API_KEY` → AzureOpenAIService
+5. `OLLAMA_BASE_URL` → OllamaService
+6. Default → GoogleGeminiService (with placeholder key for local testing)
 
 #### OpenAI Configuration
 
@@ -281,6 +289,17 @@ environment:
 
 Marker PDF is designed to work seamlessly with OpenWebUI. Here's how to configure it:
 
+### How LLM Works with OpenWebUI
+
+When integrated with OpenWebUI, the LLM feature works as follows:
+
+1. **OpenWebUI only sends** `{"use_llm": true}` in requests (or doesn't send it)
+2. **All LLM configuration** comes from environment variables in docker-compose.yml
+3. **Automatic provider detection**: The first available API key determines which LLM provider is used
+4. **Backward compatible**: When `use_llm` is not sent or is `false`, marker_server processes PDFs normally without LLM
+
+**Key Advantage**: You don't need to change OpenWebUI configuration - just set up your LLM provider once in environment variables.
+
 ### 1. Add as a Tool in OpenWebUI
 
 In OpenWebUI, add Marker PDF as an external tool with the following configuration:
@@ -313,7 +332,7 @@ Use the following JSON config in OpenWebUI's "Additional Config" section:
 
 ### 3. Available Toggles in OpenWebUI
 
-- **Use LLM**: Enable LLM for better accuracy
+- **Use LLM**: Enable LLM for better accuracy (requires LLM provider configured in environment)
 - **Skip Cache**: Don't use cached results
 - **Force OCR**: Force OCR on all pages
 - **Paginate**: Add page numbers to output
@@ -333,8 +352,15 @@ services:
     networks:
       - openwebui
     environment:
+      - PORT=8001
+      - HOST=0.0.0.0
       - USE_LLM=true
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      # Choose ONE provider by uncommenting:
+      # - OPENAI_API_KEY=${OPENAI_API_KEY}
+      # - OPENAI_MODEL=gpt-4o-mini
+      # OR
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL_NAME=gemini-2.0-flash
     volumes:
       - marker-models:/root/.cache/huggingface
       - marker-torch:/root/.cache/torch
@@ -347,11 +373,19 @@ services:
       - openwebui
     environment:
       - MARKER_API_URL=http://marker-pdf:8001
+      # Your API keys for the LLM provider
+      - OPENAI_API_KEY=${OPENAI_API_KEY}  # Or GEMINI_API_KEY, etc.
 
 networks:
   openwebui:
     driver: bridge
 ```
+
+### 5. OpenWebUI Toggle Behavior
+
+- **When `use_llm: true`**: Marker PDF will use the configured LLM provider (based on environment variables) for enhanced PDF processing
+- **When `use_llm: false` or not sent**: Marker PDF processes PDFs normally without LLM, using original fast processing
+- **No API key configured**: Falls back gracefully (may use placeholder key for local testing)
 
 ## Volume Mounts
 

@@ -172,16 +172,17 @@ The following environment variables can be configured:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `USE_LLM` | `false` | Enable LLM processing when requested by OpenWebUI |
 | `LLM_SERVICE` | `auto-detect` | Explicitly specify LLM service (auto-detected from available API keys if not set) |
 
-**Note:** When `USE_LLM=true`, the first available LLM provider (based on configured API keys) will be auto-selected in this priority order:
+**Note:** The first available LLM provider (based on configured API keys) will be auto-selected in this priority order:
 1. `GEMINI_API_KEY` → GoogleGeminiService
 2. `OPENAI_API_KEY` → OpenAIService
 3. `CLAUDE_API_KEY` → ClaudeService
 4. `AZURE_API_KEY` → AzureOpenAIService
 5. `OLLAMA_BASE_URL` → OllamaService
 6. Default → GoogleGeminiService (with placeholder key for local testing)
+
+**OpenWebUI Control:** Use the `use_llm` toggle in OpenWebUI to enable/disable LLM processing per request.
 
 #### OpenAI Configuration
 
@@ -293,12 +294,13 @@ Marker PDF is designed to work seamlessly with OpenWebUI. Here's how to configur
 
 When integrated with OpenWebUI, the LLM feature works as follows:
 
-1. **OpenWebUI only sends** `{"use_llm": true}` in requests (or doesn't send it)
-2. **All LLM configuration** comes from environment variables in docker-compose.yml
+1. **Configure your LLM provider** in environment variables (API keys in docker-compose.yml)
+2. **OpenWebUI sends** `use_llm: true/false` in requests based on the toggle
 3. **Automatic provider detection**: The first available API key determines which LLM provider is used
-4. **Backward compatible**: When `use_llm` is not sent or is `false`, marker_server processes PDFs normally without LLM
+4. **Per-request control**: OpenWebUI toggle controls whether LLM is used for each document
+5. **Backward compatible**: When `use_llm` is `false`, marker_server processes PDFs normally without LLM
 
-**Key Advantage**: You don't need to change OpenWebUI configuration - just set up your LLM provider once in environment variables.
+**Key Advantage**: Set up your LLM provider once in environment variables - OpenWebUI handles the rest with its toggle.
 
 ### 1. Add as a Tool in OpenWebUI
 
@@ -354,13 +356,15 @@ services:
     environment:
       - PORT=8001
       - HOST=0.0.0.0
-      - USE_LLM=true
-      # Choose ONE provider by uncommenting:
+      # Configure ONE LLM provider (first available will be used):
       # - OPENAI_API_KEY=${OPENAI_API_KEY}
       # - OPENAI_MODEL=gpt-4o-mini
       # OR
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - GEMINI_MODEL_NAME=gemini-2.0-flash
+      # OR (uncomment for other providers)
+      # - CLAUDE_API_KEY=${CLAUDE_API_KEY}
+      # - OLLAMA_BASE_URL=http://host.docker.internal:11434
     volumes:
       - marker-models:/root/.cache/huggingface
       - marker-torch:/root/.cache/torch

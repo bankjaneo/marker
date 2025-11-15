@@ -23,27 +23,21 @@ echo "Device: ${TORCH_DEVICE}"
 echo "Port: ${PORT:-8001}"
 echo "Host: ${HOST:-0.0.0.0}"
 
-# LLM Configuration Detection
-if [ "$USE_LLM" = "true" ] || [ "$USE_LLM" = "1" ]; then
-    echo "LLM Enabled: true"
-
-    # Detect which LLM provider is configured
-    if [ -n "$GEMINI_API_KEY" ]; then
-        echo "LLM Provider: Gemini (Google)"
-    elif [ -n "$OPENAI_API_KEY" ]; then
-        echo "LLM Provider: OpenAI"
-    elif [ -n "$CLAUDE_API_KEY" ]; then
-        echo "LLM Provider: Claude (Anthropic)"
-    elif [ -n "$AZURE_API_KEY" ]; then
-        echo "LLM Provider: Azure OpenAI"
-    elif [ -n "$OLLAMA_BASE_URL" ]; then
-        echo "LLM Provider: Ollama (Local)"
-    else
-        echo "LLM Provider: Auto-detect (will use first available)"
-    fi
+# LLM Configuration Detection (based on configured API keys)
+if [ -n "$GEMINI_API_KEY" ]; then
+    echo "LLM Provider Available: Gemini (Google)"
+elif [ -n "$OPENAI_API_KEY" ]; then
+    echo "LLM Provider Available: OpenAI"
+elif [ -n "$CLAUDE_API_KEY" ]; then
+    echo "LLM Provider Available: Claude (Anthropic)"
+elif [ -n "$AZURE_API_KEY" ]; then
+    echo "LLM Provider Available: Azure OpenAI"
+elif [ -n "$OLLAMA_BASE_URL" ]; then
+    echo "LLM Provider Available: Ollama (Local)"
 else
-    echo "LLM Enabled: false (original marker_server behavior)"
+    echo "LLM Provider: None configured (set API keys to enable)"
 fi
+echo "Note: Use OpenWebUI toggle to enable/disable LLM per request"
 
 echo ""
 echo "Server will be available at: http://${HOST:-0.0.0.0}:${PORT:-8001}"

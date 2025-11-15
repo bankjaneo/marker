@@ -23,11 +23,10 @@ services:
 
       # ===== LLM Configuration =====
       # How to use LLM with marker_server:
-      # 1. Set USE_LLM=true to enable LLM processing when requested by OpenWebUI
-      # 2. Configure ONE LLM provider below (the first available will be auto-selected)
-      # 3. OpenWebUI will send {"use_llm": true} in requests to enable LLM on-demand
+      # 1. Configure ONE LLM provider below (the first available will be auto-selected)
+      # 2. OpenWebUI will toggle {"use_llm": true/false} per request to enable LLM on-demand
       #
-      # NOTE: When USE_LLM=false or not sent by OpenWebUI, marker_server will process
+      # NOTE: When "use_llm" is not sent by OpenWebUI or is false, marker_server will process
       # PDFs normally without LLM, maintaining full backward compatibility.
 
       # Uncomment ONE provider configuration below:
@@ -57,9 +56,6 @@ services:
       # --- Ollama (Local Models - No API key required) ---
       # - OLLAMA_BASE_URL=http://host.docker.internal:11434
       # - OLLAMA_MODEL=llama2-vision
-
-      # Enable LLM processing when requested
-      # - USE_LLM=true
 
       # Optional: Explicitly specify LLM service (usually auto-detected from API keys)
       # - LLM_SERVICE=marker.services.openai.OpenAIService
@@ -106,11 +102,10 @@ services:
 
       # ===== LLM Configuration =====
       # How to use LLM with marker_server:
-      # 1. Set USE_LLM=true to enable LLM processing when requested by OpenWebUI
-      # 2. Configure ONE LLM provider below (the first available will be auto-selected)
-      # 3. OpenWebUI will send {"use_llm": true} in requests to enable LLM on-demand
+      # 1. Configure ONE LLM provider below (the first available will be auto-selected)
+      # 2. OpenWebUI will toggle {"use_llm": true/false} per request to enable LLM on-demand
       #
-      # NOTE: When USE_LLM=false or not sent by OpenWebUI, marker_server will process
+      # NOTE: When "use_llm" is not sent by OpenWebUI or is false, marker_server will process
       # PDFs normally without LLM, maintaining full backward compatibility.
 
       # Uncomment ONE provider configuration below:
@@ -130,9 +125,6 @@ services:
       # --- Ollama (Local Models - No API key required) ---
       # - OLLAMA_BASE_URL=http://host.docker.internal:11434
       # - OLLAMA_MODEL=llama2-vision
-
-      # Enable LLM processing when requested
-      # - USE_LLM=true
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8001/"]

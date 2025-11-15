@@ -167,6 +167,7 @@ The following environment variables can be configured:
 | `PORT` | `8001` | Server port |
 | `HOST` | `0.0.0.0` | Server host |
 | `TORCH_DEVICE` | `cuda`/`cpu` | Device to use (auto-set by image) |
+| `FREE_VRAM_ON_IDLE` | `false` | Unload models after processing to free VRAM (slower first request, saves ~3-5GB VRAM) |
 
 #### LLM Service Configuration
 
@@ -477,6 +478,32 @@ curl -X POST "http://localhost:8001/marker" \
 - GPU: Ensure at least 5GB VRAM available
 - CPU: Reduce batch size with `BATCH_MULTIPLIER=0.5`
 - Limit max pages: `MAX_PAGES=100`
+- **Enable VRAM-saving mode**: Set `FREE_VRAM_ON_IDLE=true` to unload models after processing (uses ~0GB idle VRAM, adds ~2-5s per request for model loading)
+
+### Low VRAM Devices (< 4GB)
+
+**Problem**: Device has insufficient VRAM for standard operation (requires 5GB peak).
+
+**Solution**: Enable dynamic VRAM management:
+```bash
+docker run -d \
+  --name marker-pdf-gpu \
+  --gpus all \
+  -p 8001:8001 \
+  -e FREE_VRAM_ON_IDLE=true \
+  -v marker-models:/root/.cache/huggingface \
+  -v marker-torch:/root/.cache/torch \
+  marker-pdf:gpu
+```
+
+**Trade-offs**:
+- **Pro**: Idle VRAM: ~5GB → ~0GB (freeing memory for other tasks)
+- **Con**: First request ~2-5s slower (model loading overhead)
+- **Benefit**: Subsequent requests after idle periods will also reload models, but allows system to use VRAM for other purposes in between
+
+**Performance Impact**:
+- With `FREE_VRAM_ON_IDLE=false` (default): Fast processing, high idle VRAM usage
+- With `FREE_VRAM_ON_IDLE=true`: Slower first request per idle period, minimal idle VRAM
 
 ### Port Already in Use
 

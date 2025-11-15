@@ -18,6 +18,7 @@ from fastapi import FastAPI, Form, File, UploadFile
 from marker.converters.pdf import PdfConverter
 from marker.models import create_model_dict
 from marker.settings import settings
+from marker.utils.model_manager import ModelManager
 
 app_data = {}
 
@@ -28,12 +29,13 @@ os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app_data["models"] = create_model_dict()
+    app_data["model_manager"] = ModelManager()
 
     yield
 
-    if "models" in app_data:
-        del app_data["models"]
+    if "model_manager" in app_data:
+        app_data["model_manager"].cleanup()
+        del app_data["model_manager"]
 
 
 app = FastAPI(lifespan=lifespan)
@@ -118,9 +120,14 @@ async def _convert_pdf(params: CommonParams):
         config_dict = config_parser.generate_config_dict()
         config_dict["pdftext_workers"] = 1
         converter_cls = PdfConverter
+
+        # Get models from manager
+        model_manager = app_data["model_manager"]
+        models = model_manager.get_models()
+
         converter = converter_cls(
             config=config_dict,
-            artifact_dict=app_data["models"],
+            artifact_dict=models,
             processor_list=config_parser.get_processors(),
             renderer=config_parser.get_renderer(),
             llm_service=config_parser.get_llm_service(),
@@ -134,6 +141,10 @@ async def _convert_pdf(params: CommonParams):
             "success": False,
             "error": str(e),
         }
+    finally:
+        # Release models if FREE_VRAM_ON_IDLE is enabled
+        if "model_manager" in app_data:
+            app_data["model_manager"].release_models()
 
     encoded = {}
     for k, v in images.items():

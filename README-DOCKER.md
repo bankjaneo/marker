@@ -193,6 +193,7 @@ The following environment variables can be configured:
 | `OPENAI_MODEL` | `gpt-4o-mini` | Model name |
 | `OPENAI_BASE_URL` | `https://api.openai.com/v1` | API base URL |
 | `OPENAI_IMAGE_FORMAT` | `png` | Image format (png/webp/jpeg) - recommended for compatibility |
+| `UNLOAD_LLAMA_SWAP_BASE_URL` | - | Llama-swap service URL to unload models before OCR (e.g., `http://172.17.0.1:9292/v1`). If set, unloads the llama-swap model before OCR to free VRAM. Requires llama-swap service running separately. |
 
 #### Gemini Configuration
 
@@ -496,13 +497,29 @@ docker run -d \
   marker-pdf:gpu
 ```
 
+**For systems using llama-swap with USE_LLM=true**, additionally unload the llama-swap model before OCR:
+```bash
+docker run -d \
+  --name marker-pdf-gpu \
+  --gpus all \
+  -p 8001:8001 \
+  -e FREE_VRAM_ON_IDLE=true \
+  -e USE_LLM=true \
+  -e UNLOAD_LLAMA_SWAP_BASE_URL=http://172.17.0.1:9292/v1 \
+  -v marker-models:/root/.cache/huggingface \
+  -v marker-torch:/root/.cache/torch \
+  marker-pdf:gpu
+```
+
 **Trade-offs**:
 - **Pro**: Idle VRAM usage drops significantly (~5GB → ~0GB), freeing up memory for other tasks.
 - **Con**: Each request after an idle period is slower (~2-5s) due to model loading overhead.
+- **With UNLOAD_LLAMA_SWAP_BASE_URL**: Additional VRAM freed during OCR phase (~1-2GB), allowing OCR to run on devices with very limited VRAM.
 
 **Performance Impact**:
 - With `FREE_VRAM_ON_IDLE=false` (default): Fast processing, high idle VRAM usage
 - With `FREE_VRAM_ON_IDLE=true`: Slower first request per idle period, minimal idle VRAM
+- With `UNLOAD_LLAMA_SWAP_BASE_URL` set: LLM model unloaded before OCR, maximizing available VRAM for OCR
 
 ### Port Already in Use
 

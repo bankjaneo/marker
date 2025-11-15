@@ -39,6 +39,9 @@ class Settings(BaseSettings):
     OPENAI_BASE_URL: Optional[str] = None
     OPENAI_IMAGE_FORMAT: Optional[str] = None
 
+    # Llama-Swap
+    UNLOAD_LLAMA_SWAP_BASE_URL: Optional[str] = None  # Base URL of llama-swap service to unload models before OCR
+
     # Claude/Anthropic
     CLAUDE_API_KEY: Optional[str] = None
     CLAUDE_MODEL_NAME: Optional[str] = None

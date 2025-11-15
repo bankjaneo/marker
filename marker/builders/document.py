@@ -9,6 +9,7 @@ from marker.schema import BlockTypes
 from marker.schema.document import Document
 from marker.schema.groups.page import PageGroup
 from marker.schema.registry import get_block_class
+from marker.utils.llama_swap_unloader import unload_llama_swap_model
 
 
 class DocumentBuilder(BaseBuilder):
@@ -33,6 +34,8 @@ class DocumentBuilder(BaseBuilder):
         layout_builder(document, provider)
         line_builder(document, provider)
         if not self.disable_ocr:
+            # Unload llama-swap model before OCR to free up VRAM
+            unload_llama_swap_model()
             ocr_builder(document, provider)
         return document
 

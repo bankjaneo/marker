@@ -154,7 +154,7 @@ async def _convert_pdf(params: CommonParams):
         try:
             del converter
             gc.collect()
-        except Exception:
+        except NameError:
             pass
 
     encoded = {}

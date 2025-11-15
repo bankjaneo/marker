@@ -21,6 +21,7 @@ from marker.converters.pdf import PdfConverter
 from marker.models import create_model_dict
 from marker.settings import settings
 from marker.utils.model_manager import ModelManager
+from marker.utils.llama_swap_unloader import unload_llama_swap_model
 
 app_data = {}
 
@@ -125,6 +126,8 @@ async def _convert_pdf(params: CommonParams):
 
         # Get models from manager (blocking operation - run in threadpool)
         model_manager = app_data["model_manager"]
+        # Unload llama-swap model before loading marker models to free VRAM and prevent CUDA OOM
+        await run_in_threadpool(unload_llama_swap_model)
         models = await run_in_threadpool(model_manager.get_models)
 
         converter = converter_cls(

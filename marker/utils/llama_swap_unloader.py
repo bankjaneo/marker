@@ -10,7 +10,7 @@ def unload_llama_swap_model() -> bool:
     Unload the llama-swap model to free up VRAM before OCR processing.
 
     This function checks if UNLOAD_LLAMA_SWAP_BASE_URL is configured.
-    If set, it makes a POST request to the /models/unload endpoint
+    If set, it makes a POST request to the /unload endpoint
     to unload the model from the llama-swap service.
 
     Returns:
@@ -21,11 +21,11 @@ def unload_llama_swap_model() -> bool:
         return True
 
     try:
-        url = f"{settings.UNLOAD_LLAMA_SWAP_BASE_URL}/models/unload"
+        url = f"{settings.UNLOAD_LLAMA_SWAP_BASE_URL}/unload"
         headers = {"Content-Type": "application/json"}
 
         logger.info(f"Unloading llama-swap model from {url}")
-        response = requests.post(url, headers=headers, timeout=10)
+        response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
 
         logger.info("Successfully unloaded llama-swap model")

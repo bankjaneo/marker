@@ -27,6 +27,12 @@ services:
       # Use this if you have < 4GB VRAM available
       # - FREE_VRAM_ON_IDLE=true
 
+      # Llama-Swap Model Unload (uncomment if using llama-swap with USE_LLM=true)
+      # Unloads the llama-swap LLM model before OCR to free additional VRAM (~1-2GB)
+      # Required: llama-swap service running separately
+      # Example: http://172.17.0.1:9292/v1
+      # - UNLOAD_LLAMA_SWAP_BASE_URL=http://172.17.0.1:9292/v1
+
       # ===== LLM Configuration =====
       # How to use LLM with marker_server:
       # 1. Configure ONE LLM provider below (the first available will be auto-selected)
@@ -105,6 +111,12 @@ services:
       - PORT=8001
       - HOST=0.0.0.0
       - TORCH_DEVICE=cpu
+
+      # Llama-Swap Model Unload (uncomment if using llama-swap with USE_LLM=true)
+      # Unloads the llama-swap LLM model before OCR to free additional VRAM (~1-2GB)
+      # Required: llama-swap service running separately
+      # Example: http://172.17.0.1:9292/v1
+      # - UNLOAD_LLAMA_SWAP_BASE_URL=http://172.17.0.1:9292/v1
 
       # ===== LLM Configuration =====
       # How to use LLM with marker_server:

@@ -30,8 +30,8 @@ services:
       # Llama-Swap Model Unload (uncomment if using llama-swap with USE_LLM=true)
       # Unloads the llama-swap LLM model before OCR to free additional VRAM (~1-2GB)
       # Required: llama-swap service running separately
-      # Example: http://172.17.0.1:9292/v1
-      # - UNLOAD_LLAMA_SWAP_BASE_URL=http://172.17.0.1:9292/v1
+      # Example: http://172.17.0.1:9292
+      # - UNLOAD_LLAMA_SWAP_BASE_URL=http://172.17.0.1:9292
 
       # ===== LLM Configuration =====
       # How to use LLM with marker_server:
@@ -115,8 +115,8 @@ services:
       # Llama-Swap Model Unload (uncomment if using llama-swap with USE_LLM=true)
       # Unloads the llama-swap LLM model before OCR to free additional VRAM (~1-2GB)
       # Required: llama-swap service running separately
-      # Example: http://172.17.0.1:9292/v1
-      # - UNLOAD_LLAMA_SWAP_BASE_URL=http://172.17.0.1:9292/v1
+      # Example: http://172.17.0.1:9292
+      # - UNLOAD_LLAMA_SWAP_BASE_URL=http://172.17.0.1:9292
 
       # ===== LLM Configuration =====
       # How to use LLM with marker_server:

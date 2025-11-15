@@ -193,7 +193,7 @@ The following environment variables can be configured:
 | `OPENAI_MODEL` | `gpt-4o-mini` | Model name |
 | `OPENAI_BASE_URL` | `https://api.openai.com/v1` | API base URL |
 | `OPENAI_IMAGE_FORMAT` | `png` | Image format (png/webp/jpeg) - recommended for compatibility |
-| `UNLOAD_LLAMA_SWAP_BASE_URL` | - | Llama-swap service URL to unload models before OCR (e.g., `http://172.17.0.1:9292/v1`). If set, unloads the llama-swap model before OCR to free VRAM. Requires llama-swap service running separately. |
+| `UNLOAD_LLAMA_SWAP_BASE_URL` | - | Llama-swap service URL to unload models before OCR (e.g., `http://172.17.0.1:9292`). If set, unloads the llama-swap model before OCR to free VRAM. Requires llama-swap service running separately. |
 
 #### Gemini Configuration
 
@@ -505,7 +505,7 @@ docker run -d \
   -p 8001:8001 \
   -e FREE_VRAM_ON_IDLE=true \
   -e USE_LLM=true \
-  -e UNLOAD_LLAMA_SWAP_BASE_URL=http://172.17.0.1:9292/v1 \
+  -e UNLOAD_LLAMA_SWAP_BASE_URL=http://172.17.0.1:9292 \
   -v marker-models:/root/.cache/huggingface \
   -v marker-torch:/root/.cache/torch \
   marker-pdf:gpu

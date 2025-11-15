@@ -21,7 +21,7 @@ def unload_llama_swap_model() -> bool:
         return True
 
     try:
-        url = f"{settings.UNLOAD_LLAMA_SWAP_BASE_URL}/unload"
+        url = f"{settings.UNLOAD_LLAMA_SWAP_BASE_URL.rstrip('/')}/unload"
         headers = {"Content-Type": "application/json"}
 
         logger.info(f"Unloading llama-swap model from {url}")

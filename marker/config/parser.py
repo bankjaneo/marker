@@ -106,8 +106,8 @@ class ConfigParser:
                 case "disable_image_extraction":
                     config["extract_images"] = False
                 case "use_llm":
-                    # Skip use_llm from being added to config - it's only used for service selection
-                    pass
+                    # Add use_llm to config so it propagates to converter and processors
+                    config["use_llm"] = v
                 case _:
                     config[k] = v
 
@@ -119,6 +119,7 @@ class ConfigParser:
         if self.cli_options.get("use_llm", False):
             self._add_llm_config_from_env(config)
 
+        logger.debug(f"Generated config - use_llm: {config.get('use_llm', 'NOT_IN_CONFIG')}")
         return config
 
     def _add_llm_config_from_env(self, config: Dict[str, any]):

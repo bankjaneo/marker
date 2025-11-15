@@ -5,6 +5,7 @@ Handles lazy loading and unloading of ML models based on the FREE_VRAM_ON_IDLE s
 When enabled, models are loaded on-demand and unloaded after processing to free VRAM.
 """
 
+import gc
 import threading
 from typing import Dict, Any, Optional
 import torch
@@ -45,13 +46,40 @@ class ModelManager:
                 )
 
     def _unload_all_models(self):
-        """Unload all models from memory and clear GPU cache."""
+        """Unload all models from memory and clear GPU cache comprehensively."""
         with self.lock:
+            # Step 1: Move models to CPU if using CUDA (helps ensure GPU tensors are released)
+            if settings.TORCH_DEVICE_MODEL == "cuda":
+                for model_name, model_obj in list(self.models.items()):
+                    try:
+                        # Try to move predictor models to CPU
+                        if hasattr(model_obj, 'model') and hasattr(model_obj.model, 'to'):
+                            model_obj.model.to('cpu')
+                        elif hasattr(model_obj, 'to'):
+                            model_obj.to('cpu')
+                    except Exception:
+                        # Some models may not support .to(), skip gracefully
+                        pass
+
+            # Step 2: Explicitly delete each model object
+            for model_name in list(self.models.keys()):
+                try:
+                    del self.models[model_name]
+                except Exception:
+                    pass
+
+            # Step 3: Clear the dictionary
             self.models.clear()
 
-            # Force GPU memory cleanup if using CUDA
+            # Step 4: Force Python garbage collection (multiple passes for circular references)
+            for _ in range(3):
+                gc.collect()
+
+            # Step 5: Clear PyTorch's CUDA cache and synchronize
             if settings.TORCH_DEVICE_MODEL == "cuda":
                 torch.cuda.empty_cache()
+                # Synchronize to ensure all CUDA operations complete
+                torch.cuda.synchronize()
 
     def get_models(self) -> Dict[str, Any]:
         """

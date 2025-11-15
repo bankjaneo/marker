@@ -2,6 +2,7 @@ import traceback
 
 import click
 import os
+import gc
 
 from pydantic import BaseModel, Field
 from starlette.responses import HTMLResponse
@@ -148,6 +149,13 @@ async def _convert_pdf(params: CommonParams):
         # Release models if FREE_VRAM_ON_IDLE is enabled (blocking operation - run in threadpool)
         if "model_manager" in app_data:
             await run_in_threadpool(app_data["model_manager"].release_models)
+
+        # Delete converter to free processor/builder references
+        try:
+            del converter
+            gc.collect()
+        except Exception:
+            pass
 
     encoded = {}
     for k, v in images.items():

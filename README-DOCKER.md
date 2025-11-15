@@ -191,7 +191,7 @@ The following environment variables can be configured:
 | `OPENAI_API_KEY` | - | OpenAI API key |
 | `OPENAI_MODEL` | `gpt-4o-mini` | Model name |
 | `OPENAI_BASE_URL` | `https://api.openai.com/v1` | API base URL |
-| `OPENAI_IMAGE_FORMAT` | `webp` | Image format (webp/png) |
+| `OPENAI_IMAGE_FORMAT` | `png` | Image format (png/webp/jpeg) - recommended for compatibility |
 
 #### Gemini Configuration
 

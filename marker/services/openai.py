@@ -28,7 +28,7 @@ class OpenAIService(BaseService):
     openai_image_format: Annotated[
         str,
         "The image format to use for the OpenAI-like service. Use 'png' for better compatability",
-    ] = "webp"
+    ] = "png"
 
     def process_images(self, images: List[Image.Image]) -> List[dict]:
         """
